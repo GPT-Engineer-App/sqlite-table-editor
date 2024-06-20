@@ -5,6 +5,7 @@ import * as SQLite from "sql.js";
 
 const Index = () => {
   const [db, setDb] = useState(null);
+  const [isDbInitialized, setIsDbInitialized] = useState(false);
   const [tableData, setTableData] = useState([]);
   const [columns, setColumns] = useState([]);
   const [sqlCommand, setSqlCommand] = useState("");
@@ -19,6 +20,7 @@ const Index = () => {
         const database = new SQLite.Database(Uints);
         setDb(database);
         loadTableData(database);
+        setIsDbInitialized(true); // Set database as initialized
       };
       reader.readAsArrayBuffer(file);
     } else {
@@ -61,7 +63,7 @@ const Index = () => {
   };
 
   const executeSqlCommand = () => {
-    if (!db) {
+    if (!isDbInitialized) {
       setSqlResult("Error: Database is not initialized.");
       return;
     }
