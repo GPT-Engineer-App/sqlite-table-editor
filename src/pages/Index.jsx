@@ -12,25 +12,33 @@ const Index = () => {
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
-    const reader = new FileReader();
-    reader.onload = () => {
-      const Uints = new Uint8Array(reader.result);
-      const database = new SQLite.Database(Uints);
-      setDb(database);
-      loadTableData(database);
-    };
-    reader.readAsArrayBuffer(file);
+    if (file && file.name.endsWith(".sqlite")) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const Uints = new Uint8Array(reader.result);
+        const database = new SQLite.Database(Uints);
+        setDb(database);
+        loadTableData(database);
+      };
+      reader.readAsArrayBuffer(file);
+    } else {
+      setSqlResult("Error: Please upload a valid SQLite database file.");
+    }
   };
 
   const loadTableData = (database) => {
-    const res = database.exec("SELECT name FROM sqlite_master WHERE type='table'");
-    if (res.length > 0) {
-      const tableName = res[0].values[0][0];
-      const tableRes = database.exec(`SELECT * FROM ${tableName}`);
-      if (tableRes.length > 0) {
-        setColumns(tableRes[0].columns);
-        setTableData(tableRes[0].values);
+    try {
+      const res = database.exec("SELECT name FROM sqlite_master WHERE type='table'");
+      if (res.length > 0) {
+        const tableName = res[0].values[0][0];
+        const tableRes = database.exec(`SELECT * FROM ${tableName}`);
+        if (tableRes.length > 0) {
+          setColumns(tableRes[0].columns);
+          setTableData(tableRes[0].values);
+        }
       }
+    } catch (error) {
+      setSqlResult("Error loading table data: " + error.message);
     }
   };
 
@@ -53,6 +61,10 @@ const Index = () => {
   };
 
   const executeSqlCommand = () => {
+    if (!db) {
+      setSqlResult("Error: Database is not initialized.");
+      return;
+    }
     try {
       const res = db.exec(sqlCommand);
       setSqlResult(JSON.stringify(res, null, 2));
