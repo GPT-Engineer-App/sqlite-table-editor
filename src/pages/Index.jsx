@@ -13,7 +13,7 @@ const Index = () => {
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
-    if (file && file.name.endsWith(".sqlite")) {
+    if (file && (file.name.endsWith(".sqlite") || file.name.endsWith(".db"))) {
       const reader = new FileReader();
       reader.onload = () => {
         const Uints = new Uint8Array(reader.result);
